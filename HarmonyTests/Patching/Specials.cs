@@ -4,6 +4,7 @@ using HarmonyLibTests.Assets.Methods;
 using NUnit.Framework;
 using System;
 using System.Linq;
+using System.Reflection;
 
 namespace HarmonyLibTests.Patching
 {
@@ -504,6 +505,20 @@ namespace HarmonyLibTests.Patching
 			Console.WriteLine($"### MarshalledWithEventHandlerTest2 BEFORE");
 			new MarshalledWithEventHandlerTest2Class().Run();
 			Console.WriteLine($"### MarshalledWithEventHandlerTest2 AFTER");
+		}
+
+		[Test]
+		public void Test_ExecutingAssemblyResolving()
+		{
+			Console.WriteLine($"### ExecutingAssemblyResolvingTest TEST");
+
+			var instance = new Harmony("test");
+			Assert.NotNull(instance, "Harmony instance");
+
+			Console.WriteLine($"### ExecutingAssemblyResolvingTest BEFORE");
+			var assembly = Assembly.GetExecutingAssembly();
+			Assert.AreEqual(typeof(Specials).Assembly, assembly);
+			Console.WriteLine($"### ExecutingAssemblyResolvingTest AFTER");
 		}
 	}
 }
