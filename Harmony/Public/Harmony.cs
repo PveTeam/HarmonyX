@@ -5,8 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using HarmonyLib.Internal.RuntimeFixes;
-using HarmonyLib.Internal.Util;
 using HarmonyLib.Public.Patching;
 using HarmonyLib.Tools;
 using MonoMod.Core.Platforms;
@@ -23,11 +21,6 @@ namespace HarmonyLib
 		[Obsolete("Use HarmonyFileLog.Enabled instead")]
 		// ReSharper disable once InconsistentNaming
 		public static bool DEBUG;
-
-		static Harmony()
-		{
-			StackTraceFixes.Install();
-		}
 
 		/// <summary>Creates a new Harmony instance</summary>
 		/// <param name="id">A unique identifier (you choose your own)</param>
