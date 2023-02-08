@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>net7.0;netstandard2.0</TargetFrameworks>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Product>HarmonyX</Product>
         <Company>BepInEx</Company>
@@ -11,7 +11,7 @@
         <Authors>Andreas Pardeike, Geoffrey Horsington, ManlyMarco et al.</Authors>
         <AssemblyName>0Harmony</AssemblyName>
         <SignAssembly>true</SignAssembly>
-        <Version>2.10.2-prerelease</Version>
+        <Version>2.10.2-prerelease.2</Version>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <RepositoryUrl>https://github.com/PveTeam/HarmonyX</RepositoryUrl>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -69,7 +69,7 @@
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
 
         <!-- Reference MonoMod.RuntimeDetour for our detour needs -->
-        <PackageReference Include="MonoModReorg.RuntimeDetour" Version="22.11.17-prerelease.1" />
+        <PackageReference Include="MonoModReorg.RuntimeDetour" Version="23.1.2-prerelease.1" />
 
         <!-- Reference SRE helpers for .NET Standard -->
         <PackageReference Include="System.Reflection.Emit" Version="4.7.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />

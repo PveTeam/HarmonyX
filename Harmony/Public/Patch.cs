@@ -40,10 +40,14 @@ namespace HarmonyLib
 		///
 		internal static byte[] Serialize(this PatchInfo patchInfo)
 		{
+#if NET6_0_OR_GREATER
+			throw new NotSupportedException();
+#else
 			using var streamMemory = new MemoryStream();
 			var formatter = new BinaryFormatter();
 			formatter.Serialize(streamMemory, patchInfo);
 			return streamMemory.GetBuffer();
+#endif
 		}
 
 		/// <summary>Deserialize a patch info</summary>
@@ -52,9 +56,13 @@ namespace HarmonyLib
 		///
 		internal static PatchInfo Deserialize(byte[] bytes)
 		{
+#if NET6_0_OR_GREATER
+			throw new NotSupportedException();
+#else
 			var formatter = new BinaryFormatter { Binder = new Binder() };
 			var streamMemory = new MemoryStream(bytes);
 			return (PatchInfo)formatter.Deserialize(streamMemory);
+#endif
 		}
 
 		/// <summary>Compare function to sort patch priorities</summary>

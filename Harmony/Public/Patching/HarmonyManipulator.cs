@@ -25,6 +25,7 @@ public class HarmonyManipulator
 	// ReSharper disable ConvertToConstant.Local
 	private static readonly string InstanceParam = "__instance";
 	private static readonly string OriginalMethodParam = "__originalMethod";
+	private static readonly string OriginalParam = "__originalMethod";
 	private static readonly string RunOriginalParam = "__runOriginal";
 	private static readonly string ResultVar = "__result";
 	private static readonly string ArgsArrayVar = "__args";
@@ -32,6 +33,7 @@ public class HarmonyManipulator
 	private static readonly string ExceptionVar = "__exception";
 	private static readonly string ParamIndexPrefix = "__";
 	private static readonly string InstanceFieldPrefix = "___";
+	private static readonly string FieldPrefix = "__field_";
 	// ReSharper restore ConvertToConstant.Local
 
 
@@ -829,7 +831,7 @@ public class HarmonyManipulator
 
 		foreach (var patchParam in parameters)
 		{
-			if (patchParam.Name == OriginalMethodParam)
+			if (patchParam.Name == OriginalMethodParam || patchParam.Name == OriginalParam)
 			{
 				if (EmitOriginalBaseMethod())
 					continue;
@@ -868,9 +870,13 @@ public class HarmonyManipulator
 				continue;
 			}
 
-			if (patchParam.Name.StartsWith(InstanceFieldPrefix, StringComparison.Ordinal))
+			if (patchParam.Name.StartsWith(InstanceFieldPrefix, StringComparison.Ordinal) ||
+			    patchParam.Name.StartsWith(FieldPrefix, StringComparison.Ordinal))
 			{
-				var fieldName = patchParam.Name.Substring(InstanceFieldPrefix.Length);
+				var fieldName = patchParam.Name.Substring(
+					patchParam.Name.StartsWith(InstanceFieldPrefix, StringComparison.Ordinal)
+						? InstanceFieldPrefix.Length
+						: FieldPrefix.Length);
 				FieldInfo fieldInfo;
 				if (fieldName.All(char.IsDigit))
 				{
