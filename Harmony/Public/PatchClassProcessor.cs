@@ -27,6 +27,9 @@ namespace HarmonyLib
 			typeof(HarmonyTargetMethods)
 		};
 
+		/// <summary name="Category">Name of the patch class's category</summary>
+		public string Category { get; set; }
+
 		/// <summary>Creates a patch class processor by pointing out a class. Similar to PatchAll() but without searching through all classes.</summary>
 		/// <param name="instance">The Harmony instance</param>
 		/// <param name="type">The class to process (need to have at least a [HarmonyPatch] attribute if allowUnannotatedType is set to <b>false</b>)</param>
@@ -56,6 +59,8 @@ namespace HarmonyLib
 			containerAttributes = HarmonyMethod.Merge(harmonyAttributes);
 			if (containerAttributes.methodType is null) // MethodType default is Normal
 				containerAttributes.methodType = MethodType.Normal;
+			
+			this.Category = containerAttributes.category;
 
 			auxilaryMethods = new Dictionary<Type, MethodInfo>();
 			foreach (var auxType in auxilaryTypes)
@@ -231,20 +236,29 @@ namespace HarmonyLib
 				return list;
 			}
 
-			static string FailOnResult(IEnumerable<MethodBase> res)
-			{
-				if (res is null) return "null";
-				if (res.Any(m => m is null)) return "some element was null";
-				return null;
-			}
-			var targetMethods = RunMethod<HarmonyTargetMethods, IEnumerable<MethodBase>>(null, null, FailOnResult);
-			if (targetMethods is object)
-				return targetMethods.ToList();
-
 			var result = new List<MethodBase>();
+
+			var targetMethods = RunMethod<HarmonyTargetMethods, IEnumerable<MethodBase>>(null, null);
+			if (targetMethods is object)
+			{
+				string error = null;
+				result = targetMethods.ToList();
+				if (result is null) error = "null";
+				else if (result.Any(m => m is null)) error = "some element was null";
+				if (error != null)
+				{
+					if (auxilaryMethods.TryGetValue(typeof(HarmonyTargetMethods), out var method))
+						throw new Exception($"Method {method.FullDescription()} returned an unexpected result: {error}");
+					else
+						throw new Exception($"Some method returned an unexpected result: {error}");
+				}
+				return result;
+			}
+
 			var targetMethod = RunMethod<HarmonyTargetMethod, MethodBase>(null, null, method => method is null ? "null" : null);
 			if (targetMethod is object)
 				result.Add(targetMethod);
+
 			return result;
 		}
 
