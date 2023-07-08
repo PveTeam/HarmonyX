@@ -34,6 +34,7 @@ public class HarmonyManipulator
 	private static readonly string ParamIndexPrefix = "__";
 	private static readonly string InstanceFieldPrefix = "___";
 	private static readonly string FieldPrefix = "__field_";
+	private static readonly string StateLocalPrefix = "__local";
 	// ReSharper restore ConvertToConstant.Local
 
 
@@ -365,7 +366,7 @@ public class HarmonyManipulator
 				if (nfix.method.DeclaringType?.FullName != null &&
 				    !variables.ContainsKey(nfix.method.DeclaringType.FullName))
 					foreach (var patchParam in parameters
-						         .Where(patchParam => patchParam.Name == StateVar))
+						         .Where(patchParam => patchParam.Name == StateVar || patchParam.Name!.StartsWith(StateLocalPrefix)))
 						variables[nfix.method.DeclaringType.FullName] =
 							il.DeclareVariable(patchParam.ParameterType.OpenRefType()); // Fix possible reftype
 			}
@@ -906,7 +907,7 @@ public class HarmonyManipulator
 			}
 
 			// state is special too since each patch has its own local var
-			if (patchParam.Name == StateVar)
+			if (patchParam.Name == StateVar || patchParam.Name!.StartsWith(StateLocalPrefix))
 			{
 				var ldlocCode = patchParam.ParameterType.IsByRef ? OpCodes.Ldloca : OpCodes.Ldloc;
 				if (variables.TryGetValue(patch.DeclaringType.FullName, out var stateVar))
