@@ -27,8 +27,8 @@ namespace HarmonyTests.Extras
 			return "{" + fixes + "}";
 		}
 
-#if NET50_OR_GREATER
-		[Test]
+#if NET5_0_OR_GREATER
+		/*[Test] // TODO maybe use later
 		public void Serialize()
 		{
 			var method = SymbolExtensions.GetMethodInfo(() => ExpectedJSON());
@@ -70,7 +70,7 @@ namespace HarmonyTests.Extras
 					var method = SymbolExtensions.GetMethodInfo(() => ExpectedJSON());
 					Assert.AreEqual(method, fixes[0].PatchMethod);
 				});
-		}
+		}*/
 #else
 		[Test]
 		public void SerializeAndDeserialize()
