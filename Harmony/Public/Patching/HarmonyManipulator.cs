@@ -26,14 +26,18 @@ public class HarmonyManipulator
 	// ReSharper disable ConvertToConstant.Local
 	private static readonly string InstanceParam = "__instance";
 	private static readonly string OriginalMethodParam = "__originalMethod";
+	private static readonly string OriginalParam = "__original";
 	private static readonly string RunOriginalParam = "__runOriginal";
+	private static readonly string PrefixSkippedParam = "__prefixSkipped";
 	private static readonly string ResultVar = "__result";
 	private static readonly string ResultRefVar = "__resultRef";
 	private static readonly string ArgsArrayVar = "__args";
 	private static readonly string StateVar = "__state";
+	private static readonly string LocalStateVar = "__local";
 	private static readonly string ExceptionVar = "__exception";
 	private static readonly string ParamIndexPrefix = "__";
 	private static readonly string InstanceFieldPrefix = "___";
+	private static readonly string FieldPrefix = "__field_";
 	// ReSharper restore ConvertToConstant.Local
 
 
@@ -902,7 +906,7 @@ public class HarmonyManipulator
 
 		foreach (var patchParam in parameters)
 		{
-			if (patchParam.Name == OriginalMethodParam)
+			if (patchParam.Name == OriginalMethodParam || patchParam.Name == OriginalParam)
 			{
 				if (EmitOriginalBaseMethod())
 					continue;
@@ -967,9 +971,9 @@ public class HarmonyManipulator
 				continue;
 			}
 
-			if (patchParam.Name.StartsWith(InstanceFieldPrefix, StringComparison.Ordinal))
+			if (patchParam.Name.StartsWith(InstanceFieldPrefix, StringComparison.Ordinal) || patchParam.Name.StartsWith(FieldPrefix, StringComparison.Ordinal))
 			{
-				var fieldName = patchParam.Name.Substring(InstanceFieldPrefix.Length);
+				var fieldName = patchParam.Name.Substring(patchParam.Name.StartsWith(InstanceFieldPrefix, StringComparison.Ordinal) ? InstanceFieldPrefix.Length : FieldPrefix.Length);
 				FieldInfo fieldInfo;
 				if (fieldName.All(char.IsDigit))
 				{
@@ -1006,6 +1010,16 @@ public class HarmonyManipulator
 					il.Emit(ldlocCode, stateVar);
 				else
 					il.Emit(OpCodes.Ldnull);
+				continue;
+			}
+
+			// unlike regular state the local state is shared between patches and must be the same exact type
+			if (patchParam.Name == LocalStateVar)
+			{
+				var ldlocCode = patchParam.ParameterType.IsByRef ? OpCodes.Ldloca : OpCodes.Ldloc;
+				if (!variables.TryGetValue(LocalStateVar, out var stateVar))
+					stateVar = variables[LocalStateVar] = il.DeclareVariable(patchParam.ParameterType);
+				il.Emit(ldlocCode, stateVar);
 				continue;
 			}
 
@@ -1061,6 +1075,22 @@ public class HarmonyManipulator
 				il.Emit(OpCodes.Ldloca, returnRefVar);
 
 				resultRefInvoke = AccessTools.Method(expectedType, "Invoke");
+				continue;
+			}
+
+			if (patchParam.Name == PrefixSkippedParam)
+			{
+				if (patchParam.ParameterType != typeof(bool))
+					throw new Exception($"Parameter {patchParam.Name} must be of type bool");
+				if (patchParam.ParameterType.IsByRef)
+					throw new Exception($"Parameter {patchParam.Name} cannot be byref");
+
+				var runOriginalVariable = variables[RunOriginalParam];
+
+				// invert runOriginal
+				il.Emit(OpCodes.Ldloc, runOriginalVariable);
+				il.Emit(OpCodes.Ldc_I4_0);
+				il.Emit(OpCodes.Ceq);
 				continue;
 			}
 
